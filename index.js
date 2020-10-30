@@ -1,6 +1,7 @@
 const { response } = require('express');
 const express = require('express');
 const morgan = require('morgan');
+const cors = require('cors');
 
 const app = express();
 
@@ -12,11 +13,12 @@ app.use(express.json());
 morgan.token('data', (req, res) => {
   return JSON.stringify(req.body);
 });
-
 // Use morgan middleware with custom token created above
 app.use(
   morgan(':method :url :status :res[content-length] - :response-time ms :data')
 );
+
+app.use(cors());
 
 let persons = [
   {
@@ -110,7 +112,7 @@ called at start of script */
   response.json(persons);
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
