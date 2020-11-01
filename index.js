@@ -1,14 +1,12 @@
-const { response } = require('express');
 const express = require('express');
+const app = express();
+
 const morgan = require('morgan');
 const cors = require('cors');
-
-const app = express();
 
 /* Middleware (json-parser) used in post and put requests. Explained here: 
 https://stackoverflow.com/questions/23259168/what-are-express-json-and-express-urlencoded/51844327 */
 app.use(express.json());
-
 // Create custom morgan token
 morgan.token('data', (req, res) => {
   return JSON.stringify(req.body);
@@ -17,9 +15,7 @@ morgan.token('data', (req, res) => {
 app.use(
   morgan(':method :url :status :res[content-length] - :response-time ms :data')
 );
-
 app.use(cors());
-
 app.use(express.static('build'));
 
 let persons = [
