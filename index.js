@@ -1,12 +1,16 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
-
+const Person = require('./models/person');
 const morgan = require('morgan');
 const cors = require('cors');
 
+app.use(express.static('build'));
 /* Middleware (json-parser) used in post and put requests. Explained here: 
 https://stackoverflow.com/questions/23259168/what-are-express-json-and-express-urlencoded/51844327 */
 app.use(express.json());
+app.use(cors());
+
 // Create custom morgan token
 morgan.token('data', (req, res) => {
   return JSON.stringify(req.body);
@@ -15,8 +19,6 @@ morgan.token('data', (req, res) => {
 app.use(
   morgan(':method :url :status :res[content-length] - :response-time ms :data')
 );
-app.use(cors());
-app.use(express.static('build'));
 
 let persons = [
   {
@@ -42,7 +44,9 @@ let persons = [
 ];
 
 app.get('/api/persons', (request, response) => {
-  response.json(persons);
+  Person.find({}).then((persons) => {
+    response.json(persons.map((eachPerson) => eachPerson.toJSON()));
+  });
 });
 
 app.get('/info', (request, response) => {
@@ -70,20 +74,10 @@ app.delete('/api/persons/:id', (request, response) => {
   response.status(204).end();
 });
 
-const generateID = () => {
-  // random number between 1 and 100
-  return Math.floor(Math.random() * 100) + 1;
-};
-
 app.post('/api/persons', (request, response) => {
   /* Note: the post method depends on the express.json() 
 called at start of script */
   const body = request.body;
-
-  // Use length of filtered array to check if name exists
-  const nameAlreadyExists = persons.filter((eachPerson) => {
-    return eachPerson.name === body.name;
-  }).length;
 
   if (!body.name) {
     return response.status(400).json({
@@ -93,21 +87,16 @@ called at start of script */
     return response.status(400).json({
       error: 'number is missing',
     });
-  } else if (nameAlreadyExists) {
-    return response.status(400).json({
-      error: 'name must be unique',
-    });
   }
 
-  const person = {
-    id: generateID(),
+  const person = new Person({
     name: body.name,
     number: body.number,
-  };
+  });
 
-  persons = persons.concat(person);
-
-  response.json(persons);
+  person.save().then((savedPerson) => {
+    response.json(savedPerson.toJSON());
+  });
 });
 
 const PORT = process.env.PORT || 3001;
