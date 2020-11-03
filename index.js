@@ -1,10 +1,11 @@
 require('dotenv').config();
+
 const express = require('express');
+
 const app = express();
-const Person = require('./models/person');
-const morgan = require('morgan');
 const cors = require('cors');
-const { response } = require('express');
+const morgan = require('morgan');
+const Person = require('./models/person');
 
 app.use(cors());
 
@@ -15,14 +16,12 @@ https://stackoverflow.com/questions/23259168/what-are-express-json-and-express-u
 app.use(express.json());
 
 // Create custom morgan token thar returns the body of a request
-morgan.token('data', (req, res) => {
-  return JSON.stringify(req.body);
+morgan.token('data', (request, response) => {
+  return JSON.stringify(request.body);
 });
 
 // Use morgan middleware with custom token created above
-app.use(
-  morgan(':method :url :status :res[content-length] - :response-time ms :data')
-);
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'));
 
 app.get('/api/persons', (request, response) => {
   Person.find({}).then((persons) => {
@@ -33,9 +32,7 @@ app.get('/api/persons', (request, response) => {
 app.get('/info', (request, response) => {
   Person.find({}).then((persons) => {
     response.send(
-      `<p>Phonebook has info for ${
-        persons.length
-      } people</p><p>${new Date().toString()}</p>`
+      `<p>Phonebook has info for ${persons.length} people</p><p>${new Date().toString()}</p>`
     );
   });
 });
@@ -64,7 +61,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
 app.post('/api/persons', (request, response, next) => {
   /* Note: the post method depends on the express.json() 
 called at start of script */
-  const body = request.body;
+  const { body } = request;
 
   if (!body.name) {
     return response.status(400).json({
@@ -91,7 +88,7 @@ called at start of script */
 });
 
 app.put('/api/persons/:id', (request, response, next) => {
-  const body = request.body;
+  const { body } = request;
 
   const person = {
     name: body.name,
