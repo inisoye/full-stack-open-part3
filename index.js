@@ -61,7 +61,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
     .catch((error) => next(error));
 });
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   /* Note: the post method depends on the express.json() 
 called at start of script */
   const body = request.body;
@@ -81,9 +81,13 @@ called at start of script */
     number: body.number,
   });
 
-  person.save().then((savedPerson) => {
-    response.json(savedPerson.toJSON());
-  });
+  person
+    .save()
+    .then((savedPerson) => savedPerson.toJSON())
+    .then((savedAndFormattedPerson) => {
+      response.json(savedAndFormattedPerson);
+    })
+    .catch((error) => next(error));
 });
 
 app.put('/api/persons/:id', (request, response, next) => {
@@ -94,7 +98,12 @@ app.put('/api/persons/:id', (request, response, next) => {
     number: body.number,
   };
 
-  Person.findByIdAndUpdate(request.params.id, person, { new: true })
+  // new: true causes event handler to be called with the new modified document instead of the original
+  // runValidators: true makes mongoose validators run on update operation. this is off by default
+  // context: 'query' prevents a weird error. Useful link: https://github.com/Automattic/mongoose/issues/4850#issuecomment-270281618
+  const updateOptions = { new: true, runValidators: true, context: 'query' };
+
+  Person.findByIdAndUpdate(request.params.id, person, updateOptions)
     .then((updatedPerson) => {
       response.json(updatedPerson.toJSON());
     })
@@ -113,6 +122,8 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' });
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message });
   }
 
   next(error);
