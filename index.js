@@ -1,3 +1,7 @@
+/**
+ * Doesnt work in Heroku production:
+ * https://stackoverflow.com/a/40138520/15063835
+ */
 require('dotenv').config();
 
 const express = require('express');
@@ -9,15 +13,15 @@ const morgan = require('morgan');
 const Person = require('./models/person');
 
 app.use(cors());
-
 app.use(express.static('build'));
-
-/* Middleware (json-parser) used in post and put requests. Explained here: 
-https://stackoverflow.com/questions/23259168/what-are-express-json-and-express-urlencoded/51844327 */
+/**
+ * Middleware (json-parser) used in post and put requests.
+ * Explained here: https://stackoverflow.com/a/51844327/15063835
+ */
 app.use(express.json());
 
-// Create custom morgan token thar returns the body of a request
-morgan.token('data', (request, response) => {
+// Create custom morgan token that returns the body of a request
+morgan.token('data', (request) => {
   return JSON.stringify(request.body);
 });
 
@@ -53,24 +57,22 @@ app.get('/api/persons/:id', (request, response, next) => {
 
 app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndRemove(request.params.id)
-    .then((result) => {
+    .then(() => {
       response.status(204).end();
     })
     .catch((error) => next(error));
 });
 
 app.post('/api/persons', (request, response, next) => {
-  /* Note: the post method depends on the express.json() 
-called at start of script */
+  /**
+   * Note: the post method depends on the express.json()
+   * called at start of script
+   */
   const { body } = request;
 
-  if (!body.name) {
+  if (body.name === undefined || body.number === undefined) {
     return response.status(400).json({
-      error: 'name is missing',
-    });
-  } else if (!body.number) {
-    return response.status(400).json({
-      error: 'number is missing',
+      error: 'name or number is missing',
     });
   }
 
