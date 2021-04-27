@@ -89,6 +89,8 @@ app.post('/api/persons', (request, response, next) => {
     });
   }
 
+  console.log(isNameInPhonebook);
+
   const person = new Person({
     name: body.name,
     number: body.number,
