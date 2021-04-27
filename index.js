@@ -77,20 +77,6 @@ app.post('/api/persons', (request, response, next) => {
     });
   }
 
-  let previousPersons;
-  Person.find({}).then((persons) => {
-    previousPersons = persons;
-  });
-
-  const isNameInPhonebook = previousPersons.map((person) => person.name).includes(body.name);
-  if (isNameInPhonebook) {
-    return response.status(409).json({
-      error: 'name must be unique',
-    });
-  }
-
-  console.log(isNameInPhonebook);
-
   const person = new Person({
     name: body.name,
     number: body.number,
