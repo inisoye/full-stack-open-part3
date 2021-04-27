@@ -21,6 +21,7 @@ app.use(express.static('build'));
 app.use(express.json());
 
 // Create custom morgan token that returns the body of a request
+// Explained: https://www.digitalocean.com/community/tutorials/nodejs-getting-started-morgan
 morgan.token('data', (request) => {
   return JSON.stringify(request.body);
 });
@@ -66,11 +67,11 @@ app.delete('/api/persons/:id', (request, response, next) => {
 app.post('/api/persons', (request, response, next) => {
   /**
    * Note: the post method depends on the express.json()
-   * called at start of script
+   * json parser called at start of script
    */
   const { body } = request;
 
-  if (body.name === undefined || body.number === undefined) {
+  if (!body.name || !body.number) {
     return response.status(400).json({
       error: 'name or number is missing',
     });
