@@ -3,11 +3,8 @@
  * https://stackoverflow.com/a/40138520/15063835
  */
 require('dotenv').config();
-
 const express = require('express');
-
 const app = express();
-
 const cors = require('cors');
 const morgan = require('morgan');
 const Person = require('./models/person');
@@ -84,7 +81,10 @@ app.post('/api/persons', (request, response, next) => {
 
   person
     .save()
-    .then((savedPerson) => response.json(savedPerson))
+    .then((savedPerson) => savedPerson.toJSON())
+    .then((savedAndFormattedPerson) => {
+      response.json(savedAndFormattedPerson);
+    })
     .catch((error) => next(error));
 });
 
