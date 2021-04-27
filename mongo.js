@@ -38,8 +38,6 @@ if (process.argv.length > 3) {
     console.log(`added ${name} number ${number} to phonebook`);
     mongoose.connection.close();
   });
-
-  return;
 }
 
 //  list all people if neither is defined

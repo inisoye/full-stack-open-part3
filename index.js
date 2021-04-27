@@ -31,7 +31,7 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :d
 
 app.get('/api/persons', (request, response) => {
   Person.find({}).then((persons) => {
-    response.json(persons.map((eachPerson) => eachPerson.toJSON()));
+    response.json(persons);
   });
 });
 
@@ -77,6 +77,18 @@ app.post('/api/persons', (request, response, next) => {
     });
   }
 
+  let previousPersons;
+  Person.find({}).then((persons) => {
+    previousPersons = persons;
+  });
+
+  const isNameInPhonebook = previousPersons.map((person) => person.name).includes(body.name);
+  if (isNameInPhonebook) {
+    return response.status(409).json({
+      error: 'name must be unique',
+    });
+  }
+
   const person = new Person({
     name: body.name,
     number: body.number,
@@ -84,10 +96,7 @@ app.post('/api/persons', (request, response, next) => {
 
   person
     .save()
-    .then((savedPerson) => savedPerson.toJSON())
-    .then((savedAndFormattedPerson) => {
-      response.json(savedAndFormattedPerson);
-    })
+    .then((savedPerson) => response.json(savedPerson))
     .catch((error) => next(error));
 });
 
