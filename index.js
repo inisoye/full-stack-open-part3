@@ -27,17 +27,21 @@ morgan.token('data', (request) => {
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'));
 
 app.get('/api/persons', (request, response) => {
-  Person.find({}).then((persons) => {
-    response.json(persons);
-  });
+  Person.find({})
+    .then((persons) => {
+      response.json(persons);
+    })
+    .catch((error) => next(error));
 });
 
 app.get('/info', (request, response) => {
-  Person.find({}).then((persons) => {
-    response.send(
-      `<p>Phonebook has info for ${persons.length} people</p><p>${new Date().toString()}</p>`
-    );
-  });
+  Person.find({})
+    .then((persons) => {
+      response.send(
+        `<p>Phonebook has info for ${persons.length} people</p><p>${new Date().toString()}</p>`
+      );
+    })
+    .catch((error) => next(error));
 });
 
 app.get('/api/persons/:id', (request, response, next) => {
