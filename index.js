@@ -27,34 +27,28 @@ morgan.token('data', (request) => {
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'));
 
 app.get('/api/persons', (request, response) => {
-  Person.find({})
-    .then((persons) => {
-      response.json(persons);
-    })
-    .catch((error) => next(error));
+  Person.find({}).then((persons) => {
+    response.json(persons);
+  });
 });
 
 app.get('/info', (request, response) => {
-  Person.find({})
-    .then((persons) => {
-      response.send(
-        `<p>Phonebook has info for ${persons.length} people</p><p>${new Date().toString()}</p>`
-      );
-    })
-    .catch((error) => next(error));
+  Person.find({}).then((persons) => {
+    response.send(
+      `<p>Phonebook has info for ${persons.length} people</p><p>${new Date().toString()}</p>`
+    );
+  });
 });
 
 app.get('/api/persons/:id', (request, response, next) => {
-  Person.findById(request.params.id)
-    .then((person) => {
-      // Prevent undefined responses
-      if (person) {
-        response.json(person);
-      } else {
-        response.status(404).end();
-      }
-    })
-    .catch((error) => next(error));
+  Person.findById(request.params.id).then((person) => {
+    // Prevent undefined responses
+    if (person) {
+      response.json(person);
+    } else {
+      response.status(404).end();
+    }
+  });
 });
 
 app.delete('/api/persons/:id', (request, response, next) => {
